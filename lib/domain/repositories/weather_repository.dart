@@ -1,13 +1,22 @@
-import 'package:dio/dio.dart';
+import 'package:simple_weather/data/remote_data_sources/weather_remote_data_source.dart';
 import 'package:simple_weather/domain/models/weather_model.dart';
 
 class WeatherRepository {
+  WeatherRepository(this._weatherRemoteDataSource);
+
+  final WeatherRemoteDataSource _weatherRemoteDataSource;
+
   Future<WeatherModel?> getWeatherModel({
     required String city,
   }) async {
-    //http://api.weatherapi.com/v1/current.json?key=02e42614dc824161b30113915231905&q=Wroclaw&aqi=no
-    final response = await Dio().get(
-        'http://api.weatherapi.com/v1/current.json?key=02e42614dc824161b30113915231905&q=Wroclaw&aqi=no');
-    return const WeatherModel(city: 'Warsaw', temperature: -5.5);
+    final responseData =
+        await _weatherRemoteDataSource.getWeatherData(city: city);
+    if (responseData == null) {
+      return null;
+    }
+    final name = responseData['location']['name'] as String;
+    final temperature = (responseData['current']['temp_c']) + 0.0 as double;
+
+    return WeatherModel(city: name, temperature: temperature);
   }
 }
